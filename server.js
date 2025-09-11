@@ -4,12 +4,9 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json());
 
-// POST /ask tar emot frågor från widgeten
+// Här tar vi emot frågorna från widgeten
 app.post("/ask", async (req, res) => {
   try {
-    const { message } = req.body;
-
-    // Skicka frågan vidare till Claude
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -18,23 +15,22 @@ app.post("/ask", async (req, res) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-3-sonnet-20240229",
-        max_tokens: 500,
-        messages: [{ role: "user", content: message }]
+        model: "claude-3-opus-20240229",
+        max_tokens: 256,
+        messages: [{ role: "user", content: req.body.question }]
       })
     });
 
     const data = await response.json();
-
-    // Skicka tillbaka Claudes svar till widgeten
-    res.json({ reply: data.content[0].text });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Något gick fel." });
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Något gick fel på servern" });
   }
 });
 
+// Render kör på en dynamisk port (process.env.PORT)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server kör på port ${PORT}`);
+  console.log(`Servern körs på port ${PORT}`);
 });

@@ -1,17 +1,28 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3000;
+
+// Tillåt din GitHub Pages
+app.use(cors({
+  origin: ["https://aeonnull.github.io", "http://localhost:3000"],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Tar emot från widgeten
 app.post("/ask", async (req, res) => {
   try {
-    const userMessage = req.body.message || "";
+    const userMessage = req.body.message;
+    if (!userMessage) {
+      return res.status(400).json({ error: "Message is required" });
+    }
 
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
+    console.log("Received message:", userMessage);
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -19,25 +30,29 @@ app.post("/ask", async (req, res) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-3-haiku-20240307", // billig & snabb
-        max_tokens: 300,
+        model: "claude-3-haiku-20240307",
+        max_tokens: 1000,
         messages: [{ role: "user", content: userMessage }]
       })
     });
 
-    const data = await r.json();
-    const text =
-      Array.isArray(data?.content) && data.content[0]?.text
-        ? data.content[0].text
-        : "Jag fick inget svar från modellen.";
+    if (!response.ok) {
+      throw new Error(`Claude API error: ${response.status}`);
+    }
 
-    // Viktigt: widgeten väntar på { reply: "..." }
-    res.json({ reply: text });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ reply: "Fel i servern." });
+    const data = await response.json();
+    const reply = Array.isArray(data?.content) && data.content[0]?.text
+      ? data.content[0].text
+      : "Inget textsvar från modellen.";
+    console.log("Claude reply:", reply);
+
+    res.json({ reply });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server kör på port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server kör på port ${PORT}`);
+});

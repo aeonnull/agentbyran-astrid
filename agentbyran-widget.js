@@ -1,135 +1,93 @@
-(function() {
-  'use strict';
+// Lägg till Google Fonts för Archivo Black och Open Sans
+const fontLink = document.createElement("link");
+fontLink.href = "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Open+Sans&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
 
-  // Ladda in Google Fonts för Archivo Black & Open Sans
-  const fontLink = document.createElement("link");
-  fontLink.href = "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Open+Sans&display=swap";
-  fontLink.rel = "stylesheet";
-  document.head.appendChild(fontLink);
+// Skapa själva chat-fönstret
+const chatWindow = document.createElement("div");
+chatWindow.style.position = "fixed";
+chatWindow.style.bottom = "80px";
+chatWindow.style.right = "20px";
+chatWindow.style.width = "350px";
+chatWindow.style.height = "450px";
+chatWindow.style.background = "#FDF9ED"; // din bakgrundsfärg
+chatWindow.style.border = "1px solid #333333";
+chatWindow.style.borderRadius = "12px";
+chatWindow.style.display = "none";
+chatWindow.style.flexDirection = "column";
+chatWindow.style.fontFamily = "'Open Sans', sans-serif"; // brödtexten
+chatWindow.style.color = "#333333";
+chatWindow.style.overflow = "hidden";
+chatWindow.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
 
-  // Hämta konfiguration från HTML-attribut
-  const scripts = document.querySelectorAll('script[data-company]');
-  const currentScript = scripts[scripts.length - 1];
+// Rubrik högst upp
+const header = document.createElement("div");
+header.innerText = "Agent Astrid";
+header.style.fontFamily = "'Archivo Black', sans-serif"; // rubrikfont
+header.style.fontSize = "18px";
+header.style.fontWeight = "bold";
+header.style.background = "#333333"; // mörkgrå header
+header.style.color = "#FDF9ED";       // ljus text
+header.style.padding = "12px";
+chatWindow.appendChild(header);
 
-  const config = {
-    company: currentScript.getAttribute('data-company') || 'Ditt Företag',
-    agent: currentScript.getAttribute('data-agent') || 'assistent',
-    endpoint: currentScript.getAttribute('data-endpoint') || '',
-    primaryColor: "#333333",   // Textfärg
-    backgroundColor: "#FDF9ED", // Bakgrund
-    position: currentScript.getAttribute('data-position') || 'bottom-right'
-  };
+// Meddelandefält
+const messages = document.createElement("div");
+messages.style.flex = "1";
+messages.style.padding = "10px";
+messages.style.overflowY = "auto";
+chatWindow.appendChild(messages);
 
-  // Skapa widget-knapp
-  const button = document.createElement('div');
-  button.innerText = '💬';
-  button.style.position = 'fixed';
-  button.style[config.position.split('-')[0]] = '20px';
-  button.style[config.position.split('-')[1]] = '20px';
-  button.style.background = config.primaryColor;
-  button.style.color = 'white';
-  button.style.borderRadius = '50%';
-  button.style.width = '50px';
-  button.style.height = '50px';
-  button.style.display = 'flex';
-  button.style.alignItems = 'center';
-  button.style.justifyContent = 'center';
-  button.style.cursor = 'pointer';
-  button.style.zIndex = '9999';
-  document.body.appendChild(button);
+// Input-fält
+const inputWrapper = document.createElement("div");
+inputWrapper.style.display = "flex";
+inputWrapper.style.borderTop = "1px solid #ccc";
 
-  // Skapa chat-fönster
-  const chatWindow = document.createElement('div');
-  chatWindow.style.position = 'fixed';
-  chatWindow.style.bottom = '80px';
-  chatWindow.style.right = '20px';
-  chatWindow.style.width = '300px';
-  chatWindow.style.height = '400px';
-  chatWindow.style.background = config.backgroundColor;
-  chatWindow.style.border = `2px solid ${config.primaryColor}`;
-  chatWindow.style.borderRadius = '10px';
-  chatWindow.style.display = 'none';
-  chatWindow.style.flexDirection = 'column';
-  chatWindow.style.fontFamily = "'Open Sans', sans-serif";
-  chatWindow.style.color = config.primaryColor;
-  chatWindow.style.zIndex = '9999';
+const input = document.createElement("input");
+input.type = "text";
+input.placeholder = "Skriv ett meddelande...";
+input.style.flex = "1";
+input.style.border = "none";
+input.style.padding = "10px";
+input.style.fontFamily = "'Open Sans', sans-serif";
 
-  // Rubrik
-  const header = document.createElement('div');
-  header.innerText = config.company + " – " + config.agent;
-  header.style.background = config.primaryColor;
-  header.style.color = 'white';
-  header.style.padding = '10px';
-  header.style.fontFamily = "'Archivo Black', sans-serif";
-  header.style.textAlign = 'center';
-  chatWindow.appendChild(header);
+const sendBtn = document.createElement("button");
+sendBtn.innerText = "Skicka";
+sendBtn.style.background = "#333333";
+sendBtn.style.color = "#FDF9ED";
+sendBtn.style.border = "none";
+sendBtn.style.padding = "10px 15px";
+sendBtn.style.cursor = "pointer";
+sendBtn.style.fontFamily = "'Archivo Black', sans-serif";
 
-  // Meddelanderuta
-  const messages = document.createElement('div');
-  messages.style.flex = '1';
-  messages.style.padding = '10px';
-  messages.style.overflowY = 'auto';
-  chatWindow.appendChild(messages);
+inputWrapper.appendChild(input);
+inputWrapper.appendChild(sendBtn);
+chatWindow.appendChild(inputWrapper);
 
-  // Input-fält
-  const inputWrapper = document.createElement('div');
-  inputWrapper.style.display = 'flex';
-  inputWrapper.style.borderTop = `1px solid ${config.primaryColor}`;
+document.body.appendChild(chatWindow);
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Skriv ett meddelande...';
-  input.style.flex = '1';
-  input.style.border = 'none';
-  input.style.padding = '10px';
-  input.style.fontFamily = "'Open Sans', sans-serif";
-  inputWrapper.appendChild(input);
+// Chat-bubblan (knappen nere till höger)
+const button = document.createElement("div");
+button.innerText = "💬";
+button.style.position = "fixed";
+button.style.bottom = "20px";
+button.style.right = "20px";
+button.style.width = "60px";
+button.style.height = "60px";
+button.style.background = "#333333"; // samma mörkgrå
+button.style.color = "#FDF9ED";      // samma ljusa färg
+button.style.borderRadius = "50%";
+button.style.display = "flex";
+button.style.alignItems = "center";
+button.style.justifyContent = "center";
+button.style.cursor = "pointer";
+button.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+button.style.fontSize = "24px";
+document.body.appendChild(button);
 
-  const sendBtn = document.createElement('button');
-  sendBtn.innerText = 'Skicka';
-  sendBtn.style.background = config.primaryColor;
-  sendBtn.style.color = 'white';
-  sendBtn.style.border = 'none';
-  sendBtn.style.padding = '10px';
-  sendBtn.style.cursor = 'pointer';
-  inputWrapper.appendChild(sendBtn);
-
-  chatWindow.appendChild(inputWrapper);
-  document.body.appendChild(chatWindow);
-
-  // Öppna/stäng chatten
-  button.addEventListener('click', () => {
-    chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
-  });
-
-  // Skicka meddelanden
-  async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
-
-    const userMsg = document.createElement('div');
-    userMsg.innerText = "Du: " + text;
-    messages.appendChild(userMsg);
-
-    input.value = '';
-
-    const response = await fetch(config.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
-    });
-
-    const data = await response.json();
-    const botMsg = document.createElement('div');
-    botMsg.innerText = config.agent + ": " + (data.reply || "Inget svar.");
-    messages.appendChild(botMsg);
-
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keypress', e => {
-    if (e.key === 'Enter') sendMessage();
-  });
-
-})();
+// Toggle öppna/stäng chatten
+button.addEventListener("click", () => {
+  chatWindow.style.display =
+    chatWindow.style.display === "none" ? "flex" : "none";
+});

@@ -1,7 +1,8 @@
 import express from "express";
 import fetch from "node-fetch";
 
-const app = express();
+const app = express();import cors from "cors";
+app.use(cors());
 app.use(express.json());
 
 // Här tar vi emot frågorna från widgeten

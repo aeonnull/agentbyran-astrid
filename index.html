@@ -3,20 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <title>Widget-test</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Open+Sans&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #FDF9ED;
+      font-family: 'Open Sans', sans-serif;
+      color: #333333;
+      margin: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Archivo Black', sans-serif;
+      color: #333333;
+    }
+  </style>
 </head>
-<body style="margin:0; background:#FDF9ED; font-family:'Open Sans', sans-serif; color:#333333;">
+<body>
+  <h1>Widget-test</h1>
 
-  <h1 style="font-family:'Archivo Black', sans-serif; text-align:center; padding:20px;">
-    Widget-test
-  </h1>
-
-  <!-- Din widget laddas här -->
+  <!-- Din widget -->
   <script src="https://aeonnull.github.io/agentbyran-astrid/agentbyran-widget.js"
-          data-company="Demo Företaget"
-          data-agent="Säljare"
+          data-company="Demo"
+          data-agent="säljare"
           data-endpoint="https://agentbyran-proxy.onrender.com/ask"
+          data-color="#2563eb"
           data-position="bottom-right">
   </script>
-
 </body>
 </html>

@@ -1,14 +1,17 @@
 import express from "express";
 import fetch from "node-fetch";
+import cors from "cors";
 
-const app = express();import cors from "cors";
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Här tar vi emot frågorna från widgeten
+// Tar emot från widgeten
 app.post("/ask", async (req, res) => {
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const userMessage = req.body.message || "";
+
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -16,22 +19,25 @@ app.post("/ask", async (req, res) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-3-opus-20240229",
-        max_tokens: 256,
-        messages: [{ role: "user", content: req.body.question }]
+        model: "claude-3-haiku-20240307", // billig & snabb
+        max_tokens: 300,
+        messages: [{ role: "user", content: userMessage }]
       })
     });
 
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Något gick fel på servern" });
+    const data = await r.json();
+    const text =
+      Array.isArray(data?.content) && data.content[0]?.text
+        ? data.content[0].text
+        : "Jag fick inget svar från modellen.";
+
+    // Viktigt: widgeten väntar på { reply: "..." }
+    res.json({ reply: text });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ reply: "Fel i servern." });
   }
 });
 
-// Render kör på en dynamisk port (process.env.PORT)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servern körs på port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server kör på port ${PORT}`));

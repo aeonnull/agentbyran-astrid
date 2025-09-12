@@ -22,9 +22,8 @@
   container.style.lineHeight = "1.5";
   container.style.overflow = "hidden";
   container.style.zIndex = "9999";
-  container.style.boxShadow = "none"; // anti-plast
 
-  // Placering enligt data-position
+  // Placering
   const [vert, horiz] = position.split("-");
   container.style[vert === "top" ? "top" : "bottom"] = "20px";
   if (horiz === "left") {
@@ -33,17 +32,17 @@
     container.style.right = "20px";
   }
 
-  // === Header (typografi, ingen färgplatta) ===
+  // === Header ===
   const header = document.createElement("div");
   header.style.padding = "10px 12px";
   header.style.fontFamily = "'Archivo Black', sans-serif";
-  header.style.fontSize = "16px";
-  header.style.textAlign = "center";
-  header.style.color = accent;
-  header.textContent = `${company} – ${agent}`;
+  header.style.fontSize = "14px";
+  header.style.textAlign = "right";
+  header.style.color = "#D6D3C8"; // watermark-färg
+  header.textContent = company; // visar "Agentbyrån" subtilt
   container.appendChild(header);
 
-  // === Messages (ren text, vänster/höger) ===
+  // === Messages ===
   const messages = document.createElement("div");
   messages.style.flex = "1";
   messages.style.padding = "10px 12px";
@@ -80,18 +79,38 @@
   container.appendChild(inputRow);
   document.body.appendChild(container);
 
+  // === Add messages ===
   function addMessage(text, isUser = false) {
     const line = document.createElement("div");
     line.style.margin = "6px 0";
     line.style.fontSize = "14px";
-    line.style.color = accent;
     line.style.whiteSpace = "pre-wrap";
-    line.style.textAlign = isUser ? "right" : "left";
+
+    if (isUser) {
+      // användarens bubbla
+      line.style.textAlign = "right";
+      line.style.display = "inline-block";
+      line.style.backgroundColor = "#E9E6DA";  // mörkare krämvit bubbla
+      line.style.padding = "6px 10px";
+      line.style.borderRadius = "6px";
+      line.style.color = accent;
+      line.style.maxWidth = "80%";
+      line.style.float = "right";
+      line.style.clear = "both";
+    } else {
+      // botten = ren text
+      line.style.textAlign = "left";
+      line.style.color = accent;
+      line.style.float = "left";
+      line.style.clear = "both";
+    }
+
     line.textContent = text;
     messages.appendChild(line);
     messages.scrollTop = messages.scrollHeight;
   }
 
+  // === Send messages ===
   async function sendMessage() {
     const text = input.value.trim();
     if (!text || !endpoint) return;

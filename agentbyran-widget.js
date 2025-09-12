@@ -1,29 +1,41 @@
-(function() {
-  const scriptTag = document.currentScript;
-  const company = scriptTag.getAttribute("data-company") || "Demo Företaget";
-  const agent = scriptTag.getAttribute("data-agent") || "Agent";
-  const endpoint = scriptTag.getAttribute("data-endpoint");
-  const accent = scriptTag.getAttribute("data-color") || "#333333";
+(function () {
+  const el = document.currentScript;
+  const company  = el.getAttribute("data-company")  || "Agentbyrån";
+  const agent    = el.getAttribute("data-agent")    || "Agent";
+  const endpoint = el.getAttribute("data-endpoint");
+  const accent   = el.getAttribute("data-color")    || "#333333";
+  const position = (el.getAttribute("data-position") || "bottom-right").toLowerCase();
 
-  // Container för hela widgeten
+  // === Container ===
   const container = document.createElement("div");
   container.style.position = "fixed";
-  container.style.bottom = "20px";
-  container.style.right = "20px";
   container.style.width = "320px";
+  container.style.maxWidth = "92vw";
   container.style.height = "420px";
-  container.style.border = `2px solid ${accent}`;
-  container.style.borderRadius = "8px";
-  container.style.backgroundColor = "#fff";
+  container.style.maxHeight = "70vh";
+  container.style.backgroundColor = "#FDF9ED";
+  container.style.border = `1px solid ${accent}`;
+  container.style.borderRadius = "6px";
   container.style.display = "flex";
   container.style.flexDirection = "column";
-  container.style.overflow = "hidden";
   container.style.fontFamily = "'Open Sans', sans-serif";
+  container.style.lineHeight = "1.5";
+  container.style.overflow = "hidden";
   container.style.zIndex = "9999";
+  container.style.boxShadow = "none"; // anti-plast
 
-  // Rubrik
+  // Placering enligt data-position
+  const [vert, horiz] = position.split("-");
+  container.style[vert === "top" ? "top" : "bottom"] = "20px";
+  if (horiz === "left") {
+    container.style.left = "20px";
+  } else {
+    container.style.right = "20px";
+  }
+
+  // === Header (typografi, ingen färgplatta) ===
   const header = document.createElement("div");
-  header.style.padding = "12px";
+  header.style.padding = "10px 12px";
   header.style.fontFamily = "'Archivo Black', sans-serif";
   header.style.fontSize = "16px";
   header.style.textAlign = "center";
@@ -31,15 +43,15 @@
   header.textContent = `${company} – ${agent}`;
   container.appendChild(header);
 
-  // Meddelandefönster
+  // === Messages (ren text, vänster/höger) ===
   const messages = document.createElement("div");
   messages.style.flex = "1";
-  messages.style.padding = "10px";
+  messages.style.padding = "10px 12px";
   messages.style.overflowY = "auto";
-  messages.style.backgroundColor = "#FDF9ED";
+  messages.style.wordBreak = "break-word";
   container.appendChild(messages);
 
-  // Input-rad
+  // === Input-rad ===
   const inputRow = document.createElement("div");
   inputRow.style.display = "flex";
   inputRow.style.borderTop = `1px solid ${accent}`;
@@ -51,6 +63,8 @@
   input.style.padding = "10px";
   input.style.border = "none";
   input.style.outline = "none";
+  input.style.backgroundColor = "#FDF9ED";
+  input.style.color = accent;
   input.style.fontFamily = "'Open Sans', sans-serif";
 
   const button = document.createElement("button");
@@ -58,47 +72,30 @@
   button.style.backgroundColor = accent;
   button.style.color = "#fff";
   button.style.border = "none";
-  button.style.padding = "10px 15px";
+  button.style.padding = "10px 14px";
   button.style.cursor = "pointer";
 
   inputRow.appendChild(input);
   inputRow.appendChild(button);
   container.appendChild(inputRow);
-
   document.body.appendChild(container);
 
-  // Funktion för chattbubblor
-  function addMessage(sender, text, isUser = false) {
-    const bubble = document.createElement("div");
-    bubble.style.maxWidth = "80%";
-    bubble.style.margin = "6px";
-    bubble.style.padding = "8px 12px";
-    bubble.style.borderRadius = "12px";
-    bubble.style.fontSize = "14px";
-    bubble.style.wordWrap = "break-word";
-
-    if (isUser) {
-      bubble.style.alignSelf = "flex-end";
-      bubble.style.backgroundColor = "#fff";
-      bubble.style.border = `1px solid ${accent}`;
-      bubble.style.color = accent;
-    } else {
-      bubble.style.alignSelf = "flex-start";
-      bubble.style.backgroundColor = "#FDF9ED";
-      bubble.style.border = `1px solid ${accent}`;
-      bubble.style.color = "#333333";
-    }
-
-    bubble.textContent = text;
-    messages.appendChild(bubble);
+  function addMessage(text, isUser = false) {
+    const line = document.createElement("div");
+    line.style.margin = "6px 0";
+    line.style.fontSize = "14px";
+    line.style.color = accent;
+    line.style.whiteSpace = "pre-wrap";
+    line.style.textAlign = isUser ? "right" : "left";
+    line.textContent = text;
+    messages.appendChild(line);
     messages.scrollTop = messages.scrollHeight;
   }
 
-  // Skicka meddelanden till backend
   async function sendMessage() {
     const text = input.value.trim();
-    if (!text) return;
-    addMessage("Du", text, true);
+    if (!text || !endpoint) return;
+    addMessage(text, true);
     input.value = "";
 
     try {
@@ -107,18 +104,14 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text })
       });
-
       if (!res.ok) throw new Error("Serverfel");
       const data = await res.json();
-      addMessage(agent, data.reply || "(Inget svar)", false);
-    } catch (err) {
-      addMessage("System", "Kunde inte kontakta servern.", false);
+      addMessage(data.reply || "(Inget svar)", false);
+    } catch {
+      addMessage("Kunde inte kontakta servern.", false);
     }
   }
 
   button.addEventListener("click", sendMessage);
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
-
+  input.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
 })();
